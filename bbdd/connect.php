@@ -14,33 +14,6 @@ function conectarConBaseDeDatos() {
     }
 }
 
-// Función para verificar si las credenciales del usuario son correctas
-// function usuarioCorrecto_PDO($usuario, $password) {
-//     global $pdo;  // Utilizamos la conexión PDO global
-
-//     // Preparamos la consulta para obtener la contraseña y el rol
-//     $query = "SELECT password, rol FROM usuarios WHERE nombre = :usuario";
-//     $stmt = $pdo->prepare($query);
-
-//     // Vinculamos el parámetro y ejecutamos la consulta
-//     $stmt->bindParam(':usuario', $usuario, PDO::PARAM_STR);
-//     $stmt->execute();
-
-//     // Comprobamos si el usuario existe
-//     if ($stmt->rowCount() > 0) {
-//         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-//         // Comprobamos si la contraseña es correcta utilizando MD5
-//         if (md5($password) === $row['password']) {
-//             return [
-//                 'rol' => $row['rol'], // Devuelve el rol del usuario
-//                 'nombre' => $usuario  // Devuelve el nombre de usuario
-//             ];
-//         }
-//     }
-//     return false; // Usuario o contraseña incorrectos
-// }
-
 function obtenerUsuarioPorNombre($pdo, $nombreUsuario) {
     // Consulta SQL para obtener el nombre y el rol del usuario
     $query = "SELECT id_usuario, nombre, rol, password FROM usuarios WHERE nombre = :nombreUsuario";
@@ -347,6 +320,89 @@ function modificarAsignatura($pdo, $id_asignatura, $nombre_asignatura, $id_curso
     $stmt->bindParam(':id_profesor', $id_profesor);
     $stmt->bindParam(':id_asignatura', $id_asignatura);
     $stmt->execute();
+}
+
+function conectarSinBaseDeDatos() {
+    try {
+        // Conectar al servidor MySQL sin especificar una base de datos
+        $pdo = new PDO("mysql:host=" . HOST, USERNAME, PASSWORD);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo;
+    } catch (PDOException $e) {
+        die("Error al conectar al servidor MySQL: " . $e->getMessage());
+    }
+}
+
+function crearBBDD($basedatos) {
+    try {
+        $conexion = getConexionPDO();
+
+        $sql = "SELECT schema_name FROM information_schema.schemata WHERE schema_name = :basedatos";
+        $stm = $conexion->prepare($sql);
+        $stm->bindParam(':basedatos', $basedatos);
+        $stm->execute();
+
+        $existe = $stm->fetch(PDO::FETCH_ASSOC);
+
+        if (!$existe) {
+            // Crear la base de datos
+            $sql = "CREATE DATABASE $basedatos CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+            if ($conexion->exec($sql) !== false) {
+                echo "Base de datos $basedatos creada en MySQL por Objetos.<br>";
+                return 0; // Indica que la base de datos fue creada
+            } else {
+                echo "Error al ejecutar consulta: " . $conexion->errorInfo();
+                return 1;
+            }
+        }
+        return 1; // Indica que la base de datos ya existe
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+        return 1;
+    }
+}
+
+function crearTablas($basedatos) {
+    try {
+        $conexion = new PDO("mysql:host=" . HOST . ";dbname=$basedatos", USERNAME, PASSWORD);
+        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $tablas = [
+            "CREATE TABLE IF NOT EXISTS alumnos (
+                id_alumno int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                id_usuario int(11) NOT NULL,
+                nombre varchar(255) NOT NULL,
+                id_curso int(11) NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
+            "CREATE TABLE IF NOT EXISTS usuarios (
+                id_usuario int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                nombre_usuario varchar(255) NOT NULL,
+                contrasena varchar(255) NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
+            "CREATE TABLE IF NOT EXISTS cursos (
+                id_curso int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                nombre_curso varchar(255) NOT NULL,
+                descripcion text NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
+            "CREATE TABLE IF NOT EXISTS profesores (
+                id_profesor int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                nombre varchar(255) NOT NULL,
+                especialidad varchar(255) NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
+        ];
+
+        foreach ($tablas as $tabla) {
+            if ($conexion->exec($tabla) !== false) {
+                echo "Tabla creada correctamente.<br>";
+            } else {
+                echo "Error al crear tabla: " . $conexion->errorInfo()[2] . "<br>";
+            }
+        }
+        return 1; // Indica que las tablas fueron creadas
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+        return 0;
+    }
 }
 
 // Llamada a la función para realizar la conexión inicial
