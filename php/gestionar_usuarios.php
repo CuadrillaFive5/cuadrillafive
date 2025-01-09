@@ -1,8 +1,6 @@
 <?php
 include_once '../bbdd/connect.php';
 
-// Fetch all users (students, professors, and admins)
-
 if (isset($_POST['add'])) {
     añadirUsuario($pdo, $_POST['nombre'], $_POST['rol'], $_POST['contraseña']);
 }
@@ -42,7 +40,7 @@ $cursos = obtenerCursos($pdo);
                 <tr>
                     <th>Nombre</th>
                     <th>Rol</th>
-                    <th>Curso</th> <!-- Nueva columna para mostrar el curso -->
+                    <th>Curso</th>
                     <th>Acciones</th>
                 </tr>
             </thead>

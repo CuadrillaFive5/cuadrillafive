@@ -1,7 +1,6 @@
 <?php
 include_once '../bbdd/connect.php';
 
-// Funciones para añadir, modificar y eliminar cursos
 if (isset($_POST['add'])) {
     $nombre = $_POST['nombre'];
     // Añadir curso

@@ -1,14 +1,14 @@
 <?php
 session_start();
 
-// Verificar si el usuario ha iniciado sesión
+// Aqui se verifica si el usuario ha iniciado sesión
 if (!isset($_SESSION['id_usuario'])) {
     die("Error: No has iniciado sesión.");
 }
 
-include_once '../bbdd/connect.php'; // Asegúrate de que la ruta es correcta
+include_once '../bbdd/connect.php';
 
-// Obtener el ID del usuario que ha iniciado sesión
+// Obtener ID del usuario que ha iniciado sesión
 $id_usuario = $_SESSION['id_usuario'];
 
 $alumnos_cursos = obtenerCursosDeUsuario($pdo, $id_usuario);

@@ -1,11 +1,10 @@
 <?php
 include_once '../bbdd/connect.php';
 
-// Obtener todos los cursos y profesores
+// Obtener cursos y profesores
 $cursos = obtenerCursos($pdo);
 $profesores = $pdo->query("SELECT id_profesor, nombre FROM profesores")->fetchAll(PDO::FETCH_ASSOC);
 
-// Función para añadir una asignatura
 if (isset($_POST['add'])) {
     $nombre_asignatura = $_POST['nombre_asignatura'];
     $id_curso = $_POST['id_curso'];
@@ -15,13 +14,12 @@ if (isset($_POST['add'])) {
     añadirAsignatura($pdo, $id_curso, $id_profesor, $nombre_asignatura);
 }
 
-// Función para eliminar una asignatura
+// Eliminar una asignatura
 if (isset($_POST['delete'])) {
     $id_asignatura = $_POST['id_asignatura'];
     eliminarAsignatura($pdo, $id_asignatura);
 }
 
-// Función para modificar una asignatura
 if (isset($_POST['modify'])) {
     $id_asignatura = $_POST['id_asignatura'];
     $nombre_asignatura = $_POST['nombre_asignatura'];
@@ -35,7 +33,6 @@ if (isset($_POST['modify'])) {
 // Obtener todas las asignaturas
 $asignaturas = obtenerAsignaturas($pdo);
 
-// Si se desea editar una asignatura, obtenemos su información
 if (isset($_GET['edit'])) {
     $id_asignatura = $_GET['edit'];
     $stmt = $pdo->prepare("SELECT * FROM asignaturas WHERE id_asignatura = ?");

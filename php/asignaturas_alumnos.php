@@ -1,14 +1,8 @@
 <?php
-include_once '../bbdd/connect.php'; // Asegúrate de que la ruta a connect.php sea correcta
-include_once '../bbdd/constantes.php';   // Asegúrate de que la ruta a constantes.php sea correcta
+include_once '../bbdd/connect.php';
 
-// Llamada a la función para realizar la conexión inicial
 $pdo = conectarConBaseDeDatos();
-
-// Obtener la lista de profesores
 $profesores = obtenerProfesores($pdo);
-
-// Obtener la lista de asignaturas
 $asignaturas = obtenerAsignaturas($pdo);
 ?>
 <!DOCTYPE html>

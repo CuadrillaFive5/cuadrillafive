@@ -15,7 +15,6 @@ function conectarConBaseDeDatos() {
 }
 
 function obtenerUsuarioPorNombre($pdo, $nombreUsuario) {
-    // Consulta SQL para obtener el nombre y el rol del usuario
     $query = "SELECT id_usuario, nombre, rol, password FROM usuarios WHERE nombre = :nombreUsuario";
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(':nombreUsuario', $nombreUsuario, PDO::PARAM_STR);
@@ -69,9 +68,6 @@ function obtenerProfesores($pdo) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-
-// Suponiendo que esta función obtiene los cursos y asignaturas de un alumno.
-// Función modificada para obtener cursos, asignaturas y el nombre completo del profesor
 function obtenerCursosDeUsuario($pdo, $id_usuario) {
     // Consulta SQL con JOIN para obtener nombre completo del profesor
     $sql = "
@@ -88,7 +84,7 @@ function obtenerCursosDeUsuario($pdo, $id_usuario) {
         JOIN 
             profesores p ON a.id_profesor = p.id_profesor
         WHERE 
-            al.id_usuario = :id_usuario"; // Filtramos por el ID del usuario (alumno)
+            al.id_usuario = :id_usuario";
 
     // Ejecutamos la consulta
     $stmt = $pdo->prepare($sql);
@@ -186,15 +182,12 @@ function obtenerRolUsuario($pdo, $id_usuario) {
 
 // Función para añadir un alumno
 function añadirAlumno($pdo, $nombre) {
-    // Se necesita el id_usuario para agregar un alumno
     $stmt = $pdo->prepare("SELECT id_usuario FROM usuarios WHERE nombre = ?");
     $stmt->execute([$nombre]);
     $id_usuario = $stmt->fetchColumn();
     
     if ($id_usuario) {
-        // Supongamos que el id_curso es pasado de alguna forma, en este caso puede ser un parámetro adicional
-        // Puedes personalizar esta parte según tu lógica de negocio
-        $id_curso = 1; // Valor ejemplo de id_curso
+        $id_curso = 1;
         $stmt = $pdo->prepare("INSERT INTO alumnos (id_usuario, nombre, id_curso) VALUES (?, ?, ?)");
         $stmt->execute([$id_usuario, $nombre, $id_curso]);
         echo "Alumno añadido correctamente.<br>";
@@ -212,7 +205,7 @@ function añadirProfesor($pdo, $nombre) {
     
     if ($id_usuario) {
         $stmt = $pdo->prepare("INSERT INTO profesores (id_usuario, nombre) VALUES (?, ?)");
-        $stmt->execute([$id_usuario, $nombre]);  // Cambié 'nombre_profesor' por 'nombre'
+        $stmt->execute([$id_usuario, $nombre]);
         echo "Profesor añadido correctamente.<br>";
     } else {
         echo "Error: No se encontró el usuario.<br>";
@@ -229,7 +222,7 @@ function modificarAlumno($pdo, $id_usuario, $nombre) {
 // Función para modificar un profesor
 function modificarProfesor($pdo, $id_usuario, $nombre) {
     $stmt = $pdo->prepare("UPDATE profesores SET nombre = ? WHERE id_usuario = ?");
-    $stmt->execute([$nombre, $id_usuario]);  // Cambié 'nombre_profesor' por 'nombre'
+    $stmt->execute([$nombre, $id_usuario]);
     echo "Profesor modificado correctamente.<br>";
 }
 
@@ -282,12 +275,10 @@ function eliminarCurso($pdo, $id_curso) {
 
 // Función para añadir una asignatura
 function añadirAsignatura($pdo, $id_curso, $id_profesor, $nombre) {
-    // Utilizamos el id_profesor para asociar la asignatura con el profesor correcto
     $stmt = $pdo->prepare("INSERT INTO asignaturas (id_curso, id_profesor, nombre) VALUES (?, ?, ?)");
     $stmt->execute([$id_curso, $id_profesor, $nombre]);
     echo "Asignatura añadida correctamente.<br>";
 }
-
 
 // Función para obtener todas las asignaturas
 function obtenerAsignaturas($pdo) {
@@ -295,7 +286,7 @@ function obtenerAsignaturas($pdo) {
     $sql = "SELECT a.id_asignatura, a.nombre AS asignatura, c.nombre AS curso, p.nombre AS profesor
             FROM asignaturas a
             JOIN cursos c ON a.id_curso = c.id_curso
-            JOIN profesores p ON a.id_profesor = p.id_profesor"; // Asegúrate de usar id_profesor
+            JOIN profesores p ON a.id_profesor = p.id_profesor";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -405,7 +396,7 @@ function crearTablas($basedatos) {
     }
 }
 
-// Llamada a la función para realizar la conexión inicial
+// conexión inicial
 $pdo = conectarConBaseDeDatos();
 
 ?>

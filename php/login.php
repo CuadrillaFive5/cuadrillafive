@@ -1,5 +1,5 @@
 <?php
-include_once '../bbdd/connect.php';  // Incluir la conexión y las funciones
+include_once '../bbdd/connect.php';
 
 session_start();  // Iniciar la sesión
 
@@ -13,11 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Obtener los datos del usuario desde la base de datos usando la función
-            $user = obtenerUsuarioPorNombre($pdo, $usuario);  // Asegúrate de tener esta función en tu archivo connect.php
+            $user = obtenerUsuarioPorNombre($pdo, $usuario);
 
-            // Depuración: Verificar qué datos se están recuperando
             if ($user) {
-                // Comprueba si la contraseña cifrada con md5 coincide
                 if ($user && md5($password) === $user['password']) {
                     // Iniciar sesión y almacenar los datos relevantes
                     $_SESSION['id_usuario'] = $user['id_usuario'];
