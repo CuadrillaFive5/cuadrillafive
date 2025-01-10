@@ -12,6 +12,97 @@ function conectarConBaseDeDatos() {
     }
 }
 
+function conectarSinBaseDeDatos() {
+    try {
+        $pdo = new PDO("mysql:host=" . HOST, USERNAME, PASSWORD);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo;
+    } catch (PDOException $e) {
+        die("Error al conectar al servidor MySQL: " . $e->getMessage());
+    }
+}
+
+function crearBBDD($basedatos) {
+    try {
+        $conexion = conectarSinBaseDeDatos();
+        $sql = "CREATE DATABASE IF NOT EXISTS $basedatos CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;";
+        $conexion->exec($sql);
+        return true; // Base de datos creada o ya existente
+    } catch (PDOException $e) {
+        echo "Error al crear la base de datos: " . $e->getMessage();
+        return false; // Error
+    }
+}
+
+function crearTablas($conexion) { 
+    try {
+        // Crear las tablas en el orden adecuado para las claves foráneas
+        $tablas = [
+            // Tabla usuarios
+            "CREATE TABLE `usuarios` (
+                `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
+                `nombre` varchar(100) NOT NULL,
+                `rol` enum('administrador','profesor','alumno') NOT NULL,
+                `password` varchar(255) NOT NULL,
+                PRIMARY KEY (`id_usuario`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;", 
+
+            // Tabla cursos
+            "CREATE TABLE `cursos` (
+                `id_curso` int(11) NOT NULL AUTO_INCREMENT,
+                `nombre` varchar(100) NOT NULL,
+                PRIMARY KEY (`id_curso`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;", 
+
+            // Tabla profesores
+            "CREATE TABLE `profesores` (
+                `id_profesor` int(11) NOT NULL AUTO_INCREMENT,
+                `id_usuario` int(11) NOT NULL,
+                `nombre` varchar(255) NOT NULL,
+                PRIMARY KEY (`id_profesor`),
+                KEY `id_usuario` (`id_usuario`),
+                CONSTRAINT `profesores_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;", 
+
+            // Tabla alumnos
+            "CREATE TABLE `alumnos` (
+                `id_alumno` int(11) NOT NULL AUTO_INCREMENT,
+                `id_usuario` int(11) NOT NULL,
+                `nombre` varchar(255) NOT NULL,
+                `id_curso` int(11) NOT NULL,
+                PRIMARY KEY (`id_alumno`),
+                KEY `id_usuario` (`id_usuario`),
+                KEY `id_curso` (`id_curso`),
+                CONSTRAINT `alumnos_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE,
+                CONSTRAINT `alumnos_ibfk_2` FOREIGN KEY (`id_curso`) REFERENCES `cursos` (`id_curso`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;", 
+
+            // Tabla asignaturas
+            "CREATE TABLE `asignaturas` (
+                `id_asignatura` int(11) NOT NULL AUTO_INCREMENT,
+                `id_curso` int(11) NOT NULL,
+                `id_profesor` int(11) NOT NULL,
+                `nombre` varchar(100) NOT NULL,
+                PRIMARY KEY (`id_asignatura`),
+                KEY `id_curso` (`id_curso`),
+                KEY `id_profesor` (`id_profesor`),
+                CONSTRAINT `asignaturas_ibfk_1` FOREIGN KEY (`id_curso`) REFERENCES `cursos` (`id_curso`) ON DELETE CASCADE,
+                CONSTRAINT `asignaturas_ibfk_2` FOREIGN KEY (`id_profesor`) REFERENCES `profesores` (`id_profesor`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
+        ];
+
+        // Ejecutamos todas las consultas SQL de creación
+        foreach ($tablas as $tabla) {
+            $conexion->exec($tabla);
+        }
+        return true; // Tablas creadas correctamente
+    } catch (PDOException $e) {
+        echo "Error al crear las tablas: " . $e->getMessage();
+        return false; // Error
+    }
+}
+
+// Función para el login
 function obtenerUsuarioPorNombre($pdo, $nombreUsuario) {
     $query = "SELECT id_usuario, nombre, rol, password FROM usuarios WHERE nombre = :nombreUsuario";
     $stmt = $pdo->prepare($query);
